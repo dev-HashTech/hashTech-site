@@ -1,0 +1,30 @@
+name: deploy to hashTech server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@hashtech.tech << 'EOF'
+            cd ~/hashTech-site
+            git pull origin main
+            npm install
+            npm run build
+            pm2 restart hashtech
+          EOF
+
